@@ -29,8 +29,8 @@ public final class ProgramContext {
 		mProgramCounter = memoryMapper.getEntryPoint();
 	}
 
-	public int getProgramCounter() {
-		return mProgramCounter;
+	public void branchRelative(int relAddress) {
+		mProgramCounter += relAddress;
 	}
 
 	public int consumeOpCode() {
@@ -41,6 +41,10 @@ public final class ProgramContext {
 		byte result = mMemoryMapper.getByte(mProgramCounter);
 		++mProgramCounter;
 		return result;
+	}
+
+	public int consumeRelativeAddress() {
+		return consumeByte();
 	}
 
 	public int consumeZeroPageAddress() {
@@ -67,7 +71,7 @@ public final class ProgramContext {
 			mStatusRegister &= ~fields;
 	}
 
-	public boolean getStatusRegisterBit(short field) {
+	public boolean getStatusBit(short field) {
 		return (mStatusRegister & (field)) != 0;
 	}
 
@@ -121,10 +125,6 @@ public final class ProgramContext {
 		return mMemoryMapper.getWord(ptr);
 	}
 
-	public void storeByteInMemory(int address, byte value) {
-		mMemoryMapper.setByte(address, value);
-	}
-
 	public byte getSP() {
 		return mStackPointer;
 	}
@@ -133,12 +133,12 @@ public final class ProgramContext {
 		mStackPointer = value;
 	}
 
-	private void setSignFlag(byte value) {
+	public void setSignFlag(byte value) {
 		boolean isNegative = ((value >> 7) & 0x1) != 0;
 		setStatusRegisterBit(ProgramContext.SIGN_FLAG, isNegative);
 	}
 
-	private void setZeroFlag(byte value) {
+	public void setZeroFlag(byte value) {
 		setStatusRegisterBit(ProgramContext.ZERO_FLAG, value == 0);
 	}
 

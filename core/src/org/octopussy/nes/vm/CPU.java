@@ -1,6 +1,7 @@
 package org.octopussy.nes.vm;
 
 import org.apache.log4j.Logger;
+import org.octopussy.nes.OctoMath;
 import org.octopussy.nes.ProgramContext;
 
 /**
@@ -108,7 +109,7 @@ public class CPU {
 				setByteInMemByZeroPageIndexedOperand(mCon.getY(), mCon.getX()); break;
 			case 0x94: // STY Zero page + X
 				setByteInMemByZeroPageIndexedOperand(mCon.getX(), mCon.getY()); break;
-			case 0x90: // STA Absolute + X
+			case 0x9D: // STA Absolute + X
 				setByteInMemByAbsIndexedOperand(mCon.getX(), mCon.getAcc()); break;
 			case 0x99: // STA Absolute + Y
 				setByteInMemByAbsIndexedOperand(mCon.getY(), mCon.getAcc()); break;
@@ -155,6 +156,61 @@ public class CPU {
 				mCon.decMemoryByte(mCon.consumeAbsAddress()); break;
 			case 0xDE: // DEC Absolute + X
 				mCon.decMemoryByte(mCon.consumeAbsAddress() + (mCon.getX() & 0xff)); break;
+
+			///////////////////////////////////////////////////////////////////////////////////////////
+			// Increment / decrement registers
+			case 0xE8: // INX Increment Index X by one
+				mCon.setX(OctoMath.incByte(mCon.getX())); break;
+			case 0xC8: // INY Increment Index Y by one
+				mCon.setY(OctoMath.incByte(mCon.getY())); break;
+			case 0xCA: // DEX Decrement Index X by one
+				mCon.setX(OctoMath.decByte(mCon.getX())); break;
+			case 0x88: // DEY Decrement Index Y by one
+				mCon.setY(OctoMath.decByte(mCon.getY())); break;
+
+			///////////////////////////////////////////////////////////////////////////////////////////
+			// BIT Test bits in memory with accumulator
+			case 0x24: // Zero page
+			case 0x2C: // Absolute
+				value = opCode == 0x24 ? getByteInMemByZeroPageOperand() : getByteInMemByAbsOperand();
+				mCon.setStatusRegisterBit(ProgramContext.OVERFLOW_FLAG, (0x40 & value) != 0);
+				mCon.setZeroFlag((byte)(value & mCon.getAcc()));
+				break;
+
+			///////////////////////////////////////////////////////////////////////////////////////////
+			// Branching
+			case 0x10: // BPL result >= 0
+				if (!mCon.getStatusBit(ProgramContext.SIGN_FLAG))
+					mCon.branchRelative(mCon.consumeRelativeAddress());
+				break;
+			case 0x30: // BMI result < 0
+				if (mCon.getStatusBit(ProgramContext.SIGN_FLAG))
+					mCon.branchRelative(mCon.consumeRelativeAddress());
+				break;
+			case 0x50: // BVC no overflow
+				if (!mCon.getStatusBit(ProgramContext.OVERFLOW_FLAG))
+					mCon.branchRelative(mCon.consumeRelativeAddress());
+				break;
+			case 0x70: // BVC overflow
+				if (mCon.getStatusBit(ProgramContext.OVERFLOW_FLAG))
+					mCon.branchRelative(mCon.consumeRelativeAddress());
+				break;
+			case 0x90: // BCC no carry
+				if (!mCon.getStatusBit(ProgramContext.CARRY_FLAG))
+					mCon.branchRelative(mCon.consumeRelativeAddress());
+				break;
+			case 0xB0: // BCC carry
+				if (mCon.getStatusBit(ProgramContext.CARRY_FLAG))
+					mCon.branchRelative(mCon.consumeRelativeAddress());
+				break;
+			case 0xD0: // BNE not zero
+				if (!mCon.getStatusBit(ProgramContext.ZERO_FLAG))
+					mCon.branchRelative(mCon.consumeRelativeAddress());
+				break;
+			case 0xF0: // BEQ zero
+				if (mCon.getStatusBit(ProgramContext.ZERO_FLAG))
+					mCon.branchRelative(mCon.consumeRelativeAddress());
+				break;
 
 			default:
 				Logger.getRootLogger().debug("Unknown operation code '0x" + Integer.toHexString(opCode) + "'");
