@@ -1,6 +1,5 @@
 package org.octopussy.nes;
 
-import org.apache.log4j.Logger;
 import org.octopussy.nes.mappers.MemoryMapper;
 
 /**
@@ -19,10 +18,11 @@ public final class ProgramContext {
 
 
 	private int mProgramCounter;
-	private int mStackPointer;
+	private byte mStackPointer;
 	private short mStatusRegister;
 	private byte mXRegister;
-	private byte mAccumulatorRegister;
+	private byte mYRegister;
+	private byte mARegister;
 
 	public ProgramContext(MemoryMapper memoryMapper) {
 		mMemoryMapper = memoryMapper;
@@ -43,9 +43,20 @@ public final class ProgramContext {
 		return result;
 	}
 
+	public int consumeZeroPageAddress() {
+		int address = mMemoryMapper.getByte(mProgramCounter);
+		++mProgramCounter;
+		return address & 0xff;
+	}
+
 	public int consumeAbsAddress() {
-		short word = mMemoryMapper.getWord(mProgramCounter);
+		int address = readAbsAddressInMem(mProgramCounter);
 		mProgramCounter += 2;
+		return address;
+	}
+
+	public int readAbsAddressInMem(int ptr) {
+		short word = mMemoryMapper.getWord(ptr);
 		return word & 0xffff;
 	}
 
@@ -56,15 +67,29 @@ public final class ProgramContext {
 			mStatusRegister &= ~fields;
 	}
 
-	public boolean getStatusRegisterBit(byte field) {
+	public boolean getStatusRegisterBit(short field) {
 		return (mStatusRegister & (field)) != 0;
 	}
 
-	public void setXRegisterValue(byte value) {
+	public void setX(byte value) {
 		mXRegister = value;
+		setZeroFlag(mXRegister);
+		setSignFlag(mXRegister);
 	}
 
-	public byte getXRegisterValue() {
+	public void setY(byte val) {
+		mYRegister = val;
+		setZeroFlag(mYRegister);
+		setSignFlag(mYRegister);
+	}
+
+	public void setAcc(byte val) {
+		mARegister = val;
+		setZeroFlag(mARegister);
+		setSignFlag(mARegister);
+	}
+
+	public byte getX() {
 		return mXRegister;
 	}
 
@@ -72,15 +97,40 @@ public final class ProgramContext {
 		return mMemoryMapper.getByte(address);
 	}
 
-	public void storeByteInMemory(int address, byte value) {
-		mMemoryMapper.writeByte(address, value);
+	public void setByteInMemory(int address, byte value) {
+		mMemoryMapper.setByte(address, value);
 	}
 
-	public void setStackPointerValue(byte value) {
+	public short getWordInMemory(int ptr) {
+		return mMemoryMapper.getWord(ptr);
+	}
+
+	public void storeByteInMemory(int address, byte value) {
+		mMemoryMapper.setByte(address, value);
+	}
+
+	public byte getSP() {
+		return mStackPointer;
+	}
+
+	public void setSP(byte value) {
 		mStackPointer = value;
 	}
 
-	public byte getAccumulatorRegister() {
-		return mAccumulatorRegister;
+	private void setSignFlag(byte value) {
+		boolean isNegative = ((value >> 7) & 0x1) != 0;
+		setStatusRegisterBit(ProgramContext.SIGN_FLAG, isNegative);
+	}
+
+	private void setZeroFlag(byte value) {
+		setStatusRegisterBit(ProgramContext.ZERO_FLAG, value == 0);
+	}
+
+	public byte getY() {
+		return mYRegister;
+	}
+
+	public byte getAcc() {
+		return mARegister;
 	}
 }

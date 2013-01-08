@@ -3,6 +3,7 @@ package org.octopussy.nes;
 import org.octopussy.nes.mappers.MemoryBank;
 import org.octopussy.nes.mappers.MemoryMapper;
 import org.octopussy.nes.mappers.NoBankSwitch;
+import org.octopussy.nes.vm.VM;
 
 import java.io.*;
 import java.util.ArrayList;

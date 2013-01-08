@@ -37,7 +37,7 @@ public abstract class MemoryMapperBaseImpl implements MemoryMapper {
 	}
 
 	@Override
-	public void writeByte(int address, byte value){
+	public void setByte(int address, byte value){
 		ensureMemRange(address, 1);
 		mRam[address] = value;
 	}

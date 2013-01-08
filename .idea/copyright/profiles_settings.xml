@@ -1,5 +1,7 @@
 <component name="CopyrightManager">
-  <settings default="">
-    <module2copyright />
+  <settings default="MIT_Octopussy">
+    <module2copyright>
+      <element module="All" copyright="MIT_Octopussy" />
+    </module2copyright>
   </settings>
 </component>
