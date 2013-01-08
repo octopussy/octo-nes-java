@@ -8,8 +8,8 @@ import org.octopussy.nes.mappers.MemoryMapper;
  * @author octopussy
  */
 public final class VM {
-	private ProgramContext mContext;
-	private CPU mCpu;
+	private CPU mCPU;
+	private PPU mPPU;
 	private final MemoryMapper mMemoryMapper;
 
 	public VM(MemoryMapper memoryMapper) throws OctoAppException {
@@ -17,14 +17,11 @@ public final class VM {
 	}
 
 	public void start() {
-		mContext = new ProgramContext(mMemoryMapper);
-		mCpu = new CPU(mContext);
-		while (performNextInstruction()) {
-		}
-	}
+		mPPU = new PPU(mMemoryMapper);
+		mCPU = new CPU(mMemoryMapper);
 
-	private boolean performNextInstruction() {
-		int opCode = mContext.consumeOpCode();
-		return mCpu.perform(opCode);
+		while (mCPU.performNextInstruction()) {
+			mPPU.tick();
+		}
 	}
 }

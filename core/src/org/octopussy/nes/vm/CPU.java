@@ -3,6 +3,7 @@ package org.octopussy.nes.vm;
 import org.apache.log4j.Logger;
 import org.octopussy.nes.OctoMath;
 import org.octopussy.nes.ProgramContext;
+import org.octopussy.nes.mappers.MemoryMapper;
 
 /**
  * @author octopussy
@@ -10,12 +11,15 @@ import org.octopussy.nes.ProgramContext;
 public class CPU {
 
 	private final ProgramContext mCon;
+	private final MemoryMapper mMemoryMapper;
 
-	public CPU(ProgramContext con) {
-		mCon = con;
+	public CPU(MemoryMapper memoryMapper) {
+		mMemoryMapper = memoryMapper;
+		mCon = new ProgramContext(memoryMapper);
 	}
 
-	public boolean perform(int opCode) {
+	public boolean performNextInstruction() {
+		int opCode = mCon.consumeOpCode();
 		int address1;
 		int address2;
 		byte value;
@@ -24,9 +28,9 @@ public class CPU {
 			///////////////////////////////////////////////////////////////////////////////////////////
 			// STATUS REGISTER
 			case 0x78:	// SEI Set interrupt disable status 1 -> I
-				mCon.setStatusRegisterBit(ProgramContext.INTERRUPT_DISABLED_FLAG, true); break;
+				mCon.setStatusRegisterBit(ProgramContext.IRQ_DISABLED_FLAG, true); break;
 			case 0x58:	// CLI Clear interrupt disable bit 0 -> I
-				mCon.setStatusRegisterBit(ProgramContext.INTERRUPT_DISABLED_FLAG, false); break;
+				mCon.setStatusRegisterBit(ProgramContext.IRQ_DISABLED_FLAG, false); break;
 			case 0x38:	// SEC   Set Carry Flag 1 -> C
 				mCon.setStatusRegisterBit(ProgramContext.CARRY_FLAG, true); break;
 			case 0x18:	// CLC Clear Carry Flag 0 -> C
@@ -97,7 +101,7 @@ public class CPU {
 				setByteInMemByZeroPageOperand(mCon.getX()); break;
 			case 0x84: // STY Zero page
 				setByteInMemByZeroPageOperand(mCon.getY()); break;
-			case 0x80: // STA Absolute
+			case 0x8D: // STA Absolute
 				setByteInMemByAbsOperand(mCon.getAcc()); break;
 			case 0x8E: // STX Absolute
 				setByteInMemByAbsOperand(mCon.getX()); break;
@@ -174,44 +178,69 @@ public class CPU {
 			case 0x2C: // Absolute
 				value = opCode == 0x24 ? getByteInMemByZeroPageOperand() : getByteInMemByAbsOperand();
 				mCon.setStatusRegisterBit(ProgramContext.OVERFLOW_FLAG, (0x40 & value) != 0);
+				mCon.setSignFlag(value);
 				mCon.setZeroFlag((byte)(value & mCon.getAcc()));
 				break;
 
 			///////////////////////////////////////////////////////////////////////////////////////////
 			// Branching
 			case 0x10: // BPL result >= 0
+				address1 = mCon.consumeRelativeAddress();
 				if (!mCon.getStatusBit(ProgramContext.SIGN_FLAG))
-					mCon.branchRelative(mCon.consumeRelativeAddress());
+					mCon.jumpRelative(address1);
 				break;
 			case 0x30: // BMI result < 0
+				address1 = mCon.consumeRelativeAddress();
 				if (mCon.getStatusBit(ProgramContext.SIGN_FLAG))
-					mCon.branchRelative(mCon.consumeRelativeAddress());
+					mCon.jumpRelative(address1);
 				break;
 			case 0x50: // BVC no overflow
+				address1 = mCon.consumeRelativeAddress();
 				if (!mCon.getStatusBit(ProgramContext.OVERFLOW_FLAG))
-					mCon.branchRelative(mCon.consumeRelativeAddress());
+					mCon.jumpRelative(address1);
 				break;
 			case 0x70: // BVC overflow
+				address1 = mCon.consumeRelativeAddress();
 				if (mCon.getStatusBit(ProgramContext.OVERFLOW_FLAG))
-					mCon.branchRelative(mCon.consumeRelativeAddress());
+					mCon.jumpRelative(address1);
 				break;
 			case 0x90: // BCC no carry
+				address1 = mCon.consumeRelativeAddress();
 				if (!mCon.getStatusBit(ProgramContext.CARRY_FLAG))
-					mCon.branchRelative(mCon.consumeRelativeAddress());
+					mCon.jumpRelative(address1);
 				break;
 			case 0xB0: // BCC carry
+				address1 = mCon.consumeRelativeAddress();
 				if (mCon.getStatusBit(ProgramContext.CARRY_FLAG))
-					mCon.branchRelative(mCon.consumeRelativeAddress());
+					mCon.jumpRelative(address1);
 				break;
 			case 0xD0: // BNE not zero
+				address1 = mCon.consumeRelativeAddress();
 				if (!mCon.getStatusBit(ProgramContext.ZERO_FLAG))
-					mCon.branchRelative(mCon.consumeRelativeAddress());
+					mCon.jumpRelative(address1);
 				break;
 			case 0xF0: // BEQ zero
+				address1 = mCon.consumeRelativeAddress();
 				if (mCon.getStatusBit(ProgramContext.ZERO_FLAG))
-					mCon.branchRelative(mCon.consumeRelativeAddress());
+					mCon.jumpRelative(address1);
+				break;
+			case 0x4C: // JMP Absolute
+				mCon.jumpAbsolute(mCon.consumeAbsAddress());
+				break;
+			case 0x6C: // JMP Indirect
+				address1 = mCon.consumeAbsAddress();
+				address2 = mCon.getWordInMemory(address1) & 0xffff;
+				mCon.jumpAbsolute(address2);
 				break;
 
+
+			// Future expansions
+			case 0x02: case 0x03: case 0x04: case 0x07: case 0x0B: case 0x0C: case 0x0F:
+			case 0x12: case 0x13: case 0x14: case 0x1A: case 0x1B: case 0x1C: case 0x1F:
+			case 0x80:
+			case 0xFA: case 0xFB:
+				Logger.getRootLogger().debug("Future expansion opcode '0x" + Integer.toHexString(opCode) + "'");
+				return true;
 			default:
 				Logger.getRootLogger().debug("Unknown operation code '0x" + Integer.toHexString(opCode) + "'");
 				return false;

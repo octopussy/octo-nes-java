@@ -22,40 +22,30 @@
 
 package org.octopussy.nes.vm;
 
+import org.apache.log4j.Logger;
 import org.octopussy.nes.mappers.MemoryMapper;
 import org.octopussy.nes.mappers.MemoryRegisterHandler;
 
 /**
  * @author octopussy
  */
-public class MemoryMapperStub implements MemoryMapper {
-	private final byte[] mMem;
+public class PPU implements MemoryRegisterHandler{
+	public static final int PPU_CONTROL_REGISTER_OFFSET = 0x2000;
 
-	public MemoryMapperStub(int size) {
-		mMem = new byte[size];
+	private final MemoryMapper mMemoryMapper;
+
+	public PPU(MemoryMapper memoryMapper) {
+		mMemoryMapper = memoryMapper;
+		memoryMapper.addMemoryRegisterHandler(PPU_CONTROL_REGISTER_OFFSET, 0x7, this);
+		mMemoryMapper.setByte(PPU_CONTROL_REGISTER_OFFSET + 2, (byte)(1 << 7));
 	}
 
 	@Override
 	public void setByte(int address, byte value) {
-		mMem[address] = value;
+		Logger.getRootLogger().debug("PPU register write: " + address + " = " + Integer.toBinaryString(value & 0xff) );
 	}
 
-	@Override
-	public int getEntryPoint() {
-		return 0;
-	}
+	public void tick() {
 
-	@Override
-	public byte getByte(int ptr) {
-		return mMem[ptr];
-	}
-
-	@Override
-	public short getWord(int ptr) {
-		return 0;
-	}
-
-	@Override
-	public void addMemoryRegisterHandler(int offset, int memWindowSize, MemoryRegisterHandler handler) {
 	}
 }

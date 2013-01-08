@@ -13,4 +13,6 @@ public interface MemoryMapper {
 	byte getByte(int ptr);
 
 	short getWord(int ptr);
+
+	void addMemoryRegisterHandler(int offset, int memWindowSize, MemoryRegisterHandler handler);
 }

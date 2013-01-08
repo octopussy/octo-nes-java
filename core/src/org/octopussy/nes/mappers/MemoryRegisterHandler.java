@@ -20,42 +20,11 @@
  * THE SOFTWARE.
  */
 
-package org.octopussy.nes.vm;
-
-import org.octopussy.nes.mappers.MemoryMapper;
-import org.octopussy.nes.mappers.MemoryRegisterHandler;
+package org.octopussy.nes.mappers;
 
 /**
  * @author octopussy
  */
-public class MemoryMapperStub implements MemoryMapper {
-	private final byte[] mMem;
-
-	public MemoryMapperStub(int size) {
-		mMem = new byte[size];
-	}
-
-	@Override
-	public void setByte(int address, byte value) {
-		mMem[address] = value;
-	}
-
-	@Override
-	public int getEntryPoint() {
-		return 0;
-	}
-
-	@Override
-	public byte getByte(int ptr) {
-		return mMem[ptr];
-	}
-
-	@Override
-	public short getWord(int ptr) {
-		return 0;
-	}
-
-	@Override
-	public void addMemoryRegisterHandler(int offset, int memWindowSize, MemoryRegisterHandler handler) {
-	}
+public interface MemoryRegisterHandler {
+	void setByte(int address, byte value);
 }

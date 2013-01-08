@@ -8,9 +8,9 @@ import java.util.List;
 /**
  * @author octopussy
  */
-public class NoBankSwitch extends MemoryMapperBaseImpl {
+public class NoBankSwitchMapper extends MemoryMapperBaseImpl {
 
-	public NoBankSwitch(RomHeader header, List<MemoryBank> prgBanks, List<MemoryBank> chrBanks) {
+	public NoBankSwitchMapper(RomHeader header, List<MemoryBank> prgBanks, List<MemoryBank> chrBanks) {
 		super(header, prgBanks, chrBanks);
 
 		int bankCopyCounter = 0;

@@ -2,7 +2,7 @@ package org.octopussy.nes;
 
 import org.octopussy.nes.mappers.MemoryBank;
 import org.octopussy.nes.mappers.MemoryMapper;
-import org.octopussy.nes.mappers.NoBankSwitch;
+import org.octopussy.nes.mappers.NoBankSwitchMapper;
 import org.octopussy.nes.vm.VM;
 
 import java.io.*;
@@ -67,7 +67,7 @@ public class Emulator {
 		List<MemoryBank> prgBanks = readMemoryBanks(fis, header.getProgramCodeBanksNumber(), PRG_BANK_SIZE);
 		List<MemoryBank> chrBanks = readMemoryBanks(fis, header.getCharRomBanksNumber(), CHR_BANK_SIZE);
 		switch (header.getMapperType()){
-			case 0: return new NoBankSwitch(header, prgBanks, chrBanks);
+			case 0: return new NoBankSwitchMapper(header, prgBanks, chrBanks);
 		}
 		return null;
 	}

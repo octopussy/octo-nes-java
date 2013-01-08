@@ -9,13 +9,13 @@ public final class ProgramContext {
 	// status register bits
 	public static final short CARRY_FLAG = 1;
 	public static final short ZERO_FLAG = 1 << 1;
-	public static final short INTERRUPT_DISABLED_FLAG = 1 << 2;
+	public static final short IRQ_DISABLED_FLAG = 1 << 2;
 	public static final short DECIMAL_MODE = 1 << 3;
+	public static final short BREAK = 1 << 4;
 	public static final short OVERFLOW_FLAG = 1 << 6;
 	public static final short SIGN_FLAG = 1 << 7;
 
 	private final MemoryMapper mMemoryMapper;
-
 
 	private int mProgramCounter;
 	private byte mStackPointer;
@@ -29,8 +29,12 @@ public final class ProgramContext {
 		mProgramCounter = memoryMapper.getEntryPoint();
 	}
 
-	public void branchRelative(int relAddress) {
+	public void jumpRelative(int relAddress) {
 		mProgramCounter += relAddress;
+	}
+
+	public void jumpAbsolute(int address) {
+	 	mProgramCounter = address;
 	}
 
 	public int consumeOpCode() {
