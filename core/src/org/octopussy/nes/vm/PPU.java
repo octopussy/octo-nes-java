@@ -53,9 +53,11 @@ public class PPU implements MemoryRegisterHandler{
 	}
 
 	@Override
-	public void notifyGetByte(int address) {
+	public byte getByte(int address) {
 		if (address == PPU_STATUS_REGISTER)
 			resetVBlank();
+
+		return mCPUMem.getByte(address, false);
 	}
 
 	public void tick() {

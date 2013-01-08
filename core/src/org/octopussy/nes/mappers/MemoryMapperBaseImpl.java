@@ -31,7 +31,7 @@ public abstract class MemoryMapperBaseImpl implements MemoryMapper {
 
 		MemRegisterHandlerEntry e = getHandlerForAddress(address);
 		if (e!=null && notifyMemoryHandlers)
-			e.handler.notifyGetByte(address);
+			return e.handler.getByte(address);
 		return mRam[address];
 	}
 

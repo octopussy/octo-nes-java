@@ -28,5 +28,5 @@ package org.octopussy.nes.mappers;
 public interface MemoryRegisterHandler {
 	void setByte(int address, byte value);
 
-	void notifyGetByte(int address);
+	byte getByte(int address);
 }
