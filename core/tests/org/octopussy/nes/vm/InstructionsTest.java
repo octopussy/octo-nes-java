@@ -48,12 +48,12 @@ public class InstructionsTest extends InstructionsTestBase{
 		mContext.setStatusRegisterBit(ProgramContext.ZERO_FLAG, false);
 
 		mContext.setStatusRegisterBit(ProgramContext.ZERO_FLAG, false);
-		mMapper.setByte(0, (byte)255);
+		mMapper.setByte(0, (byte)255, false);
 		mContext.incMemoryByte(0);
 		Assert.assertTrue(mContext.getStatusBit(ProgramContext.ZERO_FLAG));
 
 		mContext.setStatusRegisterBit(ProgramContext.ZERO_FLAG, false);
-		mMapper.setByte(0, (byte)1);
+		mMapper.setByte(0, (byte)1, false);
 		mContext.decMemoryByte(0);
 		Assert.assertTrue(mContext.getStatusBit(ProgramContext.ZERO_FLAG));
 	}
@@ -81,12 +81,12 @@ public class InstructionsTest extends InstructionsTestBase{
 		Assert.assertTrue(mContext.getStatusBit(ProgramContext.SIGN_FLAG));
 
 		mContext.setStatusRegisterBit(ProgramContext.SIGN_FLAG, false);
-		mMapper.setByte(0, (byte)127);
+		mMapper.setByte(0, (byte)127, false);
 		mContext.incMemoryByte(0);
 		Assert.assertTrue(mContext.getStatusBit(ProgramContext.SIGN_FLAG));
 
 		mContext.setStatusRegisterBit(ProgramContext.SIGN_FLAG, false);
-		mMapper.setByte(0, (byte)0);
+		mMapper.setByte(0, (byte)0, false);
 		mContext.decMemoryByte(0);
 		Assert.assertTrue(mContext.getStatusBit(ProgramContext.SIGN_FLAG));
 	}

@@ -15,4 +15,8 @@ public class OctoMath {
 		--value;
 		return (byte)value;
 	}
+
+	public static byte resetBit(byte src, byte bit) {
+		return (byte)(src & (~bit));
+	}
 }

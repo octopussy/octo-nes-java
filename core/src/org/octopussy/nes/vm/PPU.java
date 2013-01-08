@@ -23,6 +23,7 @@
 package org.octopussy.nes.vm;
 
 import org.apache.log4j.Logger;
+import org.octopussy.nes.OctoMath;
 import org.octopussy.nes.mappers.MemoryMapper;
 import org.octopussy.nes.mappers.MemoryRegisterHandler;
 
@@ -30,22 +31,46 @@ import org.octopussy.nes.mappers.MemoryRegisterHandler;
  * @author octopussy
  */
 public class PPU implements MemoryRegisterHandler{
-	public static final int PPU_CONTROL_REGISTER_OFFSET = 0x2000;
+	private static final int PPU_IO_OFFSET = 0x2000;
 
-	private final MemoryMapper mMemoryMapper;
+	private static final int PPU_CONTROL_REGISTER1 = PPU_IO_OFFSET;
+	private static final int PPU_CONTROL_REGISTER2 = PPU_IO_OFFSET + 0x1;
+	private static final int PPU_STATUS_REGISTER = PPU_IO_OFFSET + 0x2;
 
-	public PPU(MemoryMapper memoryMapper) {
-		mMemoryMapper = memoryMapper;
-		memoryMapper.addMemoryRegisterHandler(PPU_CONTROL_REGISTER_OFFSET, 0x7, this);
-		mMemoryMapper.setByte(PPU_CONTROL_REGISTER_OFFSET + 2, (byte)(1 << 7));
+	private static final short VBLANK_BIT = 1 << 7;
+
+	private final MemoryMapper mCPUMem;
+
+	public PPU(MemoryMapper cpuMemoryMapper) {
+		mCPUMem = cpuMemoryMapper;
+		mCPUMem.addMemoryRegisterHandler(PPU_IO_OFFSET, 0x7, this);
+		mCPUMem.setByte(PPU_STATUS_REGISTER, (byte) (1 << 7), false);
 	}
 
 	@Override
 	public void setByte(int address, byte value) {
-		Logger.getRootLogger().debug("PPU register write: " + address + " = " + Integer.toBinaryString(value & 0xff) );
+		Logger.getRootLogger().debug("PPU register write: 0x" + Integer.toHexString(address) + " = " + Integer.toBinaryString(value & 0xff) );
+	}
+
+	@Override
+	public void notifyGetByte(int address) {
+		if (address == PPU_STATUS_REGISTER)
+			resetVBlank();
 	}
 
 	public void tick() {
 
+	}
+
+	private void resetVBlank() {
+		setStatusRegister(OctoMath.resetBit(getStatusRegister(), (byte)VBLANK_BIT));
+	}
+
+	private byte getStatusRegister() {
+		return mCPUMem.getByte(PPU_STATUS_REGISTER, false);
+	}
+
+	private void setStatusRegister(byte value) {
+		mCPUMem.setByte(PPU_STATUS_REGISTER, value, false);
 	}
 }

@@ -36,7 +36,7 @@ public class MemoryMapperStub implements MemoryMapper {
 	}
 
 	@Override
-	public void setByte(int address, byte value) {
+	public void setByte(int address, byte value, boolean notifyMemoryHandlers) {
 		mMem[address] = value;
 	}
 
@@ -46,7 +46,7 @@ public class MemoryMapperStub implements MemoryMapper {
 	}
 
 	@Override
-	public byte getByte(int ptr) {
+	public byte getByte(int ptr, boolean notifyMemoryHandlers) {
 		return mMem[ptr];
 	}
 
@@ -59,3 +59,4 @@ public class MemoryMapperStub implements MemoryMapper {
 	public void addMemoryRegisterHandler(int offset, int memWindowSize, MemoryRegisterHandler handler) {
 	}
 }
+

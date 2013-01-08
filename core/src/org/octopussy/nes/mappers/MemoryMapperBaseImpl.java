@@ -1,6 +1,5 @@
 package org.octopussy.nes.mappers;
 
-import org.octopussy.nes.OctoAppException;
 import org.octopussy.nes.RomHeader;
 
 import java.util.ArrayList;
@@ -27,9 +26,13 @@ public abstract class MemoryMapperBaseImpl implements MemoryMapper {
 	}
 
 	@Override
-	public byte getByte(int ptr) {
-		ensureMemRange(ptr, 1);
-		return mRam[ptr];
+	public byte getByte(int address, boolean notifyMemoryHandlers) {
+		ensureMemRange(address, 1);
+
+		MemRegisterHandlerEntry e = getHandlerForAddress(address);
+		if (e!=null && notifyMemoryHandlers)
+			e.handler.notifyGetByte(address);
+		return mRam[address];
 	}
 
 	@Override
@@ -40,14 +43,17 @@ public abstract class MemoryMapperBaseImpl implements MemoryMapper {
 	}
 
 	@Override
-	public void setByte(int address, byte value){
+	public void setByte(int address, byte value, boolean notifyMemoryHandlers){
 		ensureMemRange(address, 1);
 		mRam[address] = value;
-		for (int i = 0; i < mMemoryRegisterHandlers.size(); ++i){
-			MemRegisterHandlerEntry e = mMemoryRegisterHandlers.get(i);
-			if (address >= e.offset && address < (e.offset + e.size))
-				e.handler.setByte(address - e.offset, value);
-		}
+
+		if (!notifyMemoryHandlers)
+			return;
+
+		MemRegisterHandlerEntry e = getHandlerForAddress(address);
+		if (e!=null)
+			e.handler.setByte(address, value);
+
 	}
 
 	@Override
@@ -58,6 +64,15 @@ public abstract class MemoryMapperBaseImpl implements MemoryMapper {
 	protected void swapBankIntoMemory(MemoryBank sourceBank, int memOffset) {
 		ensureMemRange(memOffset, sourceBank.getSize());
 		System.arraycopy(sourceBank.getData(), 0, mRam, memOffset, sourceBank.getSize());
+	}
+
+	private MemRegisterHandlerEntry getHandlerForAddress(int address){
+		for (int i = 0; i < mMemoryRegisterHandlers.size(); ++i){
+			MemRegisterHandlerEntry e = mMemoryRegisterHandlers.get(i);
+			if (address >= e.offset && address < (e.offset + e.size))
+				return e;
+		}
+		return null;
 	}
 
 	private void ensureMemRange(int ptr, int size) {

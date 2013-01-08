@@ -6,11 +6,11 @@ import org.octopussy.nes.OctoAppException;
  * @author octopussy
  */
 public interface MemoryMapper {
-	void setByte(int address, byte value);
+	void setByte(int address, byte value, boolean notifyMemoryHandlers);
 
 	int getEntryPoint();
 
-	byte getByte(int ptr);
+	byte getByte(int ptr, boolean notifyMemoryHandlers);
 
 	short getWord(int ptr);
 

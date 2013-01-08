@@ -52,7 +52,7 @@ public final class ProgramContext {
 	}
 
 	public byte consumeByte() {
-		byte result = mMemoryMapper.getByte(mProgramCounter);
+		byte result = mMemoryMapper.getByte(mProgramCounter, true);
 		++mProgramCounter;
 		return result;
 	}
@@ -62,7 +62,7 @@ public final class ProgramContext {
 	}
 
 	public int consumeZeroPageAddress() {
-		int address = mMemoryMapper.getByte(mProgramCounter);
+		int address = mMemoryMapper.getByte(mProgramCounter, false);
 		++mProgramCounter;
 		return address & 0xff;
 	}
@@ -108,17 +108,17 @@ public final class ProgramContext {
 	}
 
 	public void incMemoryByte(int ptr) {
-		int oldValue = mMemoryMapper.getByte(ptr) & 0xff;
+		int oldValue = mMemoryMapper.getByte(ptr, true) & 0xff;
 		byte newValue = (byte)(oldValue + 1);
-		mMemoryMapper.setByte(ptr, newValue);
+		mMemoryMapper.setByte(ptr, newValue, true);
 		setSignFlag(newValue);
 		setZeroFlag(newValue);
 	}
 
 	public void decMemoryByte(int ptr) {
-		int oldValue = mMemoryMapper.getByte(ptr) & 0xff;
+		int oldValue = mMemoryMapper.getByte(ptr, true) & 0xff;
 		byte newValue = (byte)(oldValue - 1);
-		mMemoryMapper.setByte(ptr, newValue);
+		mMemoryMapper.setByte(ptr, newValue, true);
 		setSignFlag(newValue);
 		setZeroFlag(newValue);
 	}
@@ -128,11 +128,11 @@ public final class ProgramContext {
 	}
 
 	public byte getByteInMemory(int address) {
-		return mMemoryMapper.getByte(address);
+		return mMemoryMapper.getByte(address, true);
 	}
 
 	public void setByteInMemory(int address, byte value) {
-		mMemoryMapper.setByte(address, value);
+		mMemoryMapper.setByte(address, value, true);
 	}
 
 	public short getWordInMemory(int ptr) {
