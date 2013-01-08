@@ -10,7 +10,7 @@ import java.util.List;
  * @author octopussy
  */
 public abstract class MemoryMapperBaseImpl implements MemoryMapper {
-	protected static final int RAM_SIZE = 0xffff;
+	protected static final int RAM_SIZE = 0x10000;
 
 	protected final byte[] mRam;
 	protected final RomHeader header;

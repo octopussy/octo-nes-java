@@ -13,9 +13,9 @@ import java.util.List;
  * @author octopussy
  */
 public class Emulator {
-	private static final long TRAINER_SIZE = 512;
-	private static final int PRG_BANK_SIZE = 0x3fff;
-	private static final int CHR_BANK_SIZE = 0x1fff;
+	private static final long TRAINER_SIZE = 0x200;
+	private static final int PRG_BANK_SIZE = 0x4000;
+	private static final int CHR_BANK_SIZE = 0x2000;
 
 	public Emulator() {
 	}

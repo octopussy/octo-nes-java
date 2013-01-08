@@ -2,10 +2,16 @@ package org.octopussy.nes;
 
 import org.octopussy.nes.mappers.MemoryMapper;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Queue;
+
 /**
  * @author octopussy
  */
 public final class ProgramContext {
+	public static final int STACK_SIZE = 0x100;
+
 	// status register bits
 	public static final short CARRY_FLAG = 1;
 	public static final short ZERO_FLAG = 1 << 1;
@@ -13,20 +19,24 @@ public final class ProgramContext {
 	public static final short DECIMAL_MODE = 1 << 3;
 	public static final short BREAK = 1 << 4;
 	public static final short OVERFLOW_FLAG = 1 << 6;
-	public static final short SIGN_FLAG = 1 << 7;
 
+	public static final short SIGN_FLAG = 1 << 7;
 	private final MemoryMapper mMemoryMapper;
 
 	private int mProgramCounter;
-	private byte mStackPointer;
-	private short mStatusRegister;
+	private int mStackPointer;
+	private byte mStatusRegister;
 	private byte mXRegister;
 	private byte mYRegister;
 	private byte mARegister;
 
+	private final byte[] mStack;
+
 	public ProgramContext(MemoryMapper memoryMapper) {
 		mMemoryMapper = memoryMapper;
 		mProgramCounter = memoryMapper.getEntryPoint();
+		mStack = new byte[STACK_SIZE];
+		mStackPointer = STACK_SIZE - 1;
 	}
 
 	public void jumpRelative(int relAddress) {
@@ -129,7 +139,7 @@ public final class ProgramContext {
 		return mMemoryMapper.getWord(ptr);
 	}
 
-	public byte getSP() {
+	public int getSP() {
 		return mStackPointer;
 	}
 
@@ -152,5 +162,23 @@ public final class ProgramContext {
 
 	public byte getAcc() {
 		return mARegister;
+	}
+
+	public int getProgramCounter() {
+		return mProgramCounter;
+	}
+
+	public void push(byte value){
+		mStack[mStackPointer] = value;
+		--mStackPointer;
+	}
+
+	public void pushAddress(int address) {
+		push((byte)((address >> 8) & 0xff));
+		push((byte)(address & 0xff));
+	}
+
+	public byte getStatusRegister() {
+		return mStatusRegister;
 	}
 }

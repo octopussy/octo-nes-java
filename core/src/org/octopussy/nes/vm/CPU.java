@@ -9,6 +9,7 @@ import org.octopussy.nes.mappers.MemoryMapper;
  * @author octopussy
  */
 public class CPU {
+	public static final int IRQ_BRK_ADDRESS = 0xfffe;
 
 	private final ProgramContext mCon;
 	private final MemoryMapper mMemoryMapper;
@@ -25,6 +26,14 @@ public class CPU {
 		byte value;
 		switch (opCode){
 
+			case 0x00: // BRK
+				int returnAddress = mCon.getProgramCounter() + 1;
+				mCon.pushAddress(returnAddress);
+				mCon.setStatusRegisterBit(ProgramContext.BREAK, true);
+				mCon.push(mCon.getStatusRegister());
+				mCon.setStatusRegisterBit(ProgramContext.IRQ_DISABLED_FLAG, true);
+				mCon.jumpAbsolute(mCon.getWordInMemory(IRQ_BRK_ADDRESS) & 0xffff);
+				break;
 			///////////////////////////////////////////////////////////////////////////////////////////
 			// STATUS REGISTER
 			case 0x78:	// SEI Set interrupt disable status 1 -> I
@@ -131,7 +140,7 @@ public class CPU {
 			case 0xA8: // TAY Transfer accumulator to index Y
 				mCon.setY(mCon.getAcc()); break;
 			case 0xBA: // TSX Transfer stack pointer to index X
-				mCon.setX(mCon.getSP()); break;
+				mCon.setX((byte)(mCon.getSP() & 0xff)); break;
 			case 0x8A: // TXA Transfer index X to accumulator
 				mCon.setAcc(mCon.getX()); break;
 			case 0x9A: // TXS Transfer index X to stack pointer
@@ -232,11 +241,42 @@ public class CPU {
 				address2 = mCon.getWordInMemory(address1) & 0xffff;
 				mCon.jumpAbsolute(address2);
 				break;
+			case 0x20: // JSR Jump to new location saving return address
+				mCon.pushAddress(mCon.getProgramCounter() + 2);
+				mCon.jumpAbsolute(mCon.consumeAbsAddress());
+				break;
 
+			///////////////////////////////////////////////////////////////////////////////////////////
+			// CMP Compare memory and accumulator
+			case 0xC9: // Immediate
+				compareBytes(mCon.consumeByte(), mCon.getAcc()); break;
+
+			case 0xDD: // Absolute + X
+				compareBytes(getByteInMemByAbsIndexedOperand(mCon.getX()), mCon.getAcc()); break;
+
+			///////////////////////////////////////////////////////////////////////////////////////////
+			// ORA "OR" memory with accumulator
+			case 0x09: // Immediate
+				mCon.setAcc(logicOr(mCon.consumeByte(), mCon.getAcc())); break;
+//			case 0x05: // ZP
+//				break;
+//			case 0x15: // ZP + X
+//				break;
+//			case 0x0D: // Abs
+//				break;
+//			case 0x1D: // Abs + X
+//				break;
+//			case 0x19: // Abs + Y
+//				break;
+//			case 0x01: // Indirect (,X)
+//				break;
+//			case 0x11: // Indirect (,) Y
+//				break;
 
 			// Future expansions
 			case 0x02: case 0x03: case 0x04: case 0x07: case 0x0B: case 0x0C: case 0x0F:
 			case 0x12: case 0x13: case 0x14: case 0x1A: case 0x1B: case 0x1C: case 0x1F:
+			case 0x43: case 0x4F:
 			case 0x80:
 			case 0xFA: case 0xFB:
 				Logger.getRootLogger().debug("Future expansion opcode '0x" + Integer.toHexString(opCode) + "'");
@@ -246,6 +286,20 @@ public class CPU {
 				return false;
 		}
 		return true;
+	}
+
+	private byte logicOr(byte src, byte r) {
+		byte res = (byte)(src | r);
+		mCon.setSignFlag(res);
+		mCon.setZeroFlag(res);
+		return res;
+	}
+
+	private void compareBytes(byte src, byte r) {
+		int cmp = (r & 0xff) - (src & 0xff);
+		mCon.setStatusRegisterBit(ProgramContext.CARRY_FLAG, cmp < 0x100);
+		mCon.setSignFlag((byte) (cmp & 0xff));
+		mCon.setZeroFlag((byte)(cmp & 0xff));
 	}
 
 	private byte getByteInMemByAbsIndexedOperand(byte indexOperandValue) {
