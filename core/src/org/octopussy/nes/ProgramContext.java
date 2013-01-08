@@ -89,6 +89,22 @@ public final class ProgramContext {
 		setSignFlag(mARegister);
 	}
 
+	public void incMemoryByte(int ptr) {
+		int oldValue = mMemoryMapper.getByte(ptr) & 0xff;
+		byte newValue = (byte)(oldValue + 1);
+		mMemoryMapper.setByte(ptr, newValue);
+		setSignFlag(newValue);
+		setZeroFlag(newValue);
+	}
+
+	public void decMemoryByte(int ptr) {
+		int oldValue = mMemoryMapper.getByte(ptr) & 0xff;
+		byte newValue = (byte)(oldValue - 1);
+		mMemoryMapper.setByte(ptr, newValue);
+		setSignFlag(newValue);
+		setZeroFlag(newValue);
+	}
+
 	public byte getX() {
 		return mXRegister;
 	}

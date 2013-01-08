@@ -44,6 +44,18 @@ public class InstructionsTest extends InstructionsTestBase{
 		mContext.setStatusRegisterBit(ProgramContext.ZERO_FLAG, false);
 		mContext.setAcc((byte) 0);
 		Assert.assertTrue(mContext.getStatusRegisterBit(ProgramContext.ZERO_FLAG));
+
+		mContext.setStatusRegisterBit(ProgramContext.ZERO_FLAG, false);
+
+		mContext.setStatusRegisterBit(ProgramContext.ZERO_FLAG, false);
+		mMapper.setByte(0, (byte)255);
+		mContext.incMemoryByte(0);
+		Assert.assertTrue(mContext.getStatusRegisterBit(ProgramContext.ZERO_FLAG));
+
+		mContext.setStatusRegisterBit(ProgramContext.ZERO_FLAG, false);
+		mMapper.setByte(0, (byte)1);
+		mContext.decMemoryByte(0);
+		Assert.assertTrue(mContext.getStatusRegisterBit(ProgramContext.ZERO_FLAG));
 	}
 
 	@Test
@@ -66,6 +78,16 @@ public class InstructionsTest extends InstructionsTestBase{
 		mContext.setAcc((byte) 0);
 		Assert.assertFalse(mContext.getStatusRegisterBit(ProgramContext.SIGN_FLAG));
 		mContext.setAcc((byte) 128);
+		Assert.assertTrue(mContext.getStatusRegisterBit(ProgramContext.SIGN_FLAG));
+
+		mContext.setStatusRegisterBit(ProgramContext.SIGN_FLAG, false);
+		mMapper.setByte(0, (byte)127);
+		mContext.incMemoryByte(0);
+		Assert.assertTrue(mContext.getStatusRegisterBit(ProgramContext.SIGN_FLAG));
+
+		mContext.setStatusRegisterBit(ProgramContext.SIGN_FLAG, false);
+		mMapper.setByte(0, (byte)0);
+		mContext.decMemoryByte(0);
 		Assert.assertTrue(mContext.getStatusRegisterBit(ProgramContext.SIGN_FLAG));
 	}
 }

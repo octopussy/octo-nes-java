@@ -78,6 +78,7 @@ public class CPU {
 				address2 = mCon.getWordInMemory(address1) & 0xffff;
 				value = mCon.getByteInMemory(address2);
 				mCon.setAcc(value);
+				break;
 			case 0xB1: // LDA (Indirect), Y
 				//throw new NotImplementedException();
 
@@ -132,6 +133,28 @@ public class CPU {
 				mCon.setSP(mCon.getX()); break;
 			case 0x98: // TYA Transfer index Y to accumulator
 				mCon.setAcc(mCon.getY()); break;
+
+			///////////////////////////////////////////////////////////////////////////////////////////
+			// Increment memory by one
+			case 0xE6: // INC Zero page
+				mCon.incMemoryByte(mCon.consumeZeroPageAddress()); break;
+			case 0xF6: // INC Zero page + X
+				mCon.incMemoryByte(mCon.consumeZeroPageAddress() + (mCon.getX() & 0xff)); break;
+			case 0xEE: // INC Absolute
+				mCon.incMemoryByte(mCon.consumeAbsAddress()); break;
+			case 0xFE: // INC Absolute + X
+				mCon.incMemoryByte(mCon.consumeAbsAddress() + (mCon.getX() & 0xff)); break;
+
+			///////////////////////////////////////////////////////////////////////////////////////////
+			// Decrement memory by one
+			case 0xC6: // DEC Zero page
+				mCon.decMemoryByte(mCon.consumeZeroPageAddress()); break;
+			case 0xD6: // DEC Zero page + X
+				mCon.decMemoryByte(mCon.consumeZeroPageAddress() + (mCon.getX() & 0xff)); break;
+			case 0xCE: // DEC Absolute
+				mCon.decMemoryByte(mCon.consumeAbsAddress()); break;
+			case 0xDE: // DEC Absolute + X
+				mCon.decMemoryByte(mCon.consumeAbsAddress() + (mCon.getX() & 0xff)); break;
 
 			default:
 				Logger.getRootLogger().debug("Unknown operation code '0x" + Integer.toHexString(opCode) + "'");
