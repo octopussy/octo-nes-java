@@ -1,6 +1,6 @@
 package org.octopussy.nes.vm;
 
-import org.apache.log4j.Logger;
+import org.octopussy.nes.Logger;
 import org.octopussy.nes.OctoMath;
 import org.octopussy.nes.ProgramContext;
 import org.octopussy.nes.mappers.MemoryMapper;
@@ -9,10 +9,13 @@ import org.octopussy.nes.mappers.MemoryMapper;
  * @author octopussy
  */
 public class CPU {
-	public static final int IRQ_BRK_ADDRESS = 0xfffe;
+	private static final int NMI_ADDRESS = 0xfffa;
+	private static final int RESET_ADDRESS = 0xfffc;
+	private static final int IRQ_BRK_ADDRESS = 0xfffe;
 
 	private final ProgramContext mCon;
 	private final MemoryMapper mMemoryMapper;
+
 
 	public CPU(MemoryMapper memoryMapper) {
 		mMemoryMapper = memoryMapper;
@@ -27,12 +30,7 @@ public class CPU {
 		switch (opCode){
 
 			case 0x00: // BRK
-				int returnAddress = mCon.getProgramCounter() + 1;
-				mCon.pushAddress(returnAddress);
-				mCon.setStatusRegisterBit(ProgramContext.BREAK, true);
-				mCon.push(mCon.getStatusRegister());
-				mCon.setStatusRegisterBit(ProgramContext.IRQ_DISABLED_FLAG, true);
-				mCon.jumpAbsolute(mCon.getWordInMemory(IRQ_BRK_ADDRESS) & 0xffff);
+				performBRK();
 				break;
 			///////////////////////////////////////////////////////////////////////////////////////////
 			// STATUS REGISTER
@@ -279,13 +277,35 @@ public class CPU {
 			case 0x43: case 0x4F:
 			case 0x80:
 			case 0xFA: case 0xFB:
-				Logger.getRootLogger().debug("Future expansion opcode '0x" + Integer.toHexString(opCode) + "'");
+				Logger.debug("Future expansion opcode '0x" + Integer.toHexString(opCode) + "'");
 				return true;
 			default:
-				Logger.getRootLogger().debug("Unknown operation code '0x" + Integer.toHexString(opCode) + "'");
+				Logger.debug("Unknown operation code '0x" + Integer.toHexString(opCode) + "'");
 				return false;
 		}
 		return true;
+	}
+
+	public void performReset() {
+		performInterrupt(mCon.getWordInMemory(RESET_ADDRESS) & 0xffff);
+	}
+	
+	public void performNMI(){
+		performInterrupt(mCon.getWordInMemory(NMI_ADDRESS) & 0xffff);
+	}
+
+	public void performBRK() {
+		if (!mCon.getStatusBit(ProgramContext.IRQ_DISABLED_FLAG))
+			performInterrupt(mCon.getWordInMemory(IRQ_BRK_ADDRESS) & 0xffff);
+	}
+
+	private void performInterrupt(int interruptAddress){
+		int returnAddress = mCon.getProgramCounter() + 1;
+		mCon.pushAddress(returnAddress);
+		mCon.setStatusRegisterBit(ProgramContext.BREAK, true);
+		mCon.push(mCon.getStatusRegister());
+		mCon.setStatusRegisterBit(ProgramContext.IRQ_DISABLED_FLAG, true);
+		mCon.jumpAbsolute(interruptAddress);
 	}
 
 	private byte logicOr(byte src, byte r) {

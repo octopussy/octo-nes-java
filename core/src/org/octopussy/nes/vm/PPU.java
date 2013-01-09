@@ -22,7 +22,7 @@
 
 package org.octopussy.nes.vm;
 
-import org.apache.log4j.Logger;
+import org.octopussy.nes.Logger;
 import org.octopussy.nes.OctoMath;
 import org.octopussy.nes.mappers.MemoryMapper;
 import org.octopussy.nes.mappers.MemoryRegisterHandler;
@@ -49,7 +49,7 @@ public class PPU implements MemoryRegisterHandler{
 
 	@Override
 	public void setByte(int address, byte value) {
-		Logger.getRootLogger().debug("PPU register write: 0x" + Integer.toHexString(address) + " = " + Integer.toBinaryString(value & 0xff) );
+		Logger.debug("PPU register write: 0x" + Integer.toHexString(address) + " = " + Integer.toBinaryString(value & 0xff));
 	}
 
 	@Override
@@ -60,8 +60,8 @@ public class PPU implements MemoryRegisterHandler{
 		return mCPUMem.getByte(address, false);
 	}
 
-	public void tick() {
-
+	public boolean tick() {
+		return false;
 	}
 
 	private void resetVBlank() {

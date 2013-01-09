@@ -20,32 +20,13 @@
  * THE SOFTWARE.
  */
 
-package org.octopussy.nes.vm;
-
-import org.octopussy.nes.OctoAppException;
-import org.octopussy.nes.mappers.MemoryMapper;
+package org.octopussy.nes;
 
 /**
  * @author octopussy
  */
-public final class VM {
-	private CPU mCPU;
-	private PPU mPPU;
-	private final MemoryMapper mMemoryMapper;
-
-	public VM(MemoryMapper memoryMapper) throws OctoAppException {
-		mMemoryMapper = memoryMapper;
-	}
-
-	public void start() {
-		mPPU = new PPU(mMemoryMapper);
-		mCPU = new CPU(mMemoryMapper);
-
-		mCPU.performReset();
-		while (mCPU.performNextInstruction()) {
-			boolean vBlankOccurred = mPPU.tick();
-			if (vBlankOccurred)
-				mCPU.performNMI();
-		}
+public class Logger {
+	public static void debug(String message){
+		System.out.println(message);
 	}
 }
