@@ -24,6 +24,7 @@ package org.octopussy.nes.vm;
 
 import org.octopussy.nes.Logger;
 import org.octopussy.nes.OctoMath;
+import org.octopussy.nes.graph.PPURenderer;
 import org.octopussy.nes.mappers.MemoryMapper;
 import org.octopussy.nes.mappers.MemoryRegisterHandler;
 
@@ -40,8 +41,10 @@ public class PPU implements MemoryRegisterHandler{
 	private static final short VBLANK_BIT = 1 << 7;
 
 	private final MemoryMapper mCPUMem;
+	private final PPURenderer mRenderer;
 
-	public PPU(MemoryMapper cpuMemoryMapper) {
+	public PPU(MemoryMapper cpuMemoryMapper, PPURenderer renderer) {
+		mRenderer = renderer;
 		mCPUMem = cpuMemoryMapper;
 		mCPUMem.addMemoryRegisterHandler(PPU_IO_OFFSET, 0x7, this);
 		mCPUMem.setByte(PPU_STATUS_REGISTER, (byte) (1 << 7), false);

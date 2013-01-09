@@ -20,39 +20,21 @@
  * THE SOFTWARE.
  */
 
-package org.octopussy.nes.vm;
+package org.octopussy.nes;
 
-import org.octopussy.nes.OctoAppException;
 import org.octopussy.nes.graph.PPURenderer;
-import org.octopussy.nes.mappers.MemoryMapper;
+
+import javax.swing.*;
 
 /**
  * @author octopussy
  */
-public final class VM {
-	private CPU mCPU;
-	private PPU mPPU;
-	private final MemoryMapper mMemoryMapper;
-	private boolean mStopped;
+public class OctoNesFrame extends JPanel implements PPURenderer{
+	public OctoNesFrame() {
 
-	public VM(MemoryMapper memoryMapper) throws OctoAppException {
-		mMemoryMapper = memoryMapper;
 	}
 
-	public void start(PPURenderer renderer) {
-		mStopped = false;
-		mPPU = new PPU(mMemoryMapper, renderer);
-		mCPU = new CPU(mMemoryMapper);
-
-		mCPU.performReset();
-		while (mCPU.performNextInstruction() && !mStopped) {
-			boolean vBlankOccurred = mPPU.tick();
-			if (vBlankOccurred)
-				mCPU.performNMI();
-		}
-	}
-
-	public void stop() {
-		mStopped = true;
+	@Override
+	public void onStartRender() {
 	}
 }

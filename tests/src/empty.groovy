@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2013 by octopussy
  *
@@ -20,39 +21,6 @@
  * THE SOFTWARE.
  */
 
-package org.octopussy.nes.vm;
-
-import org.octopussy.nes.OctoAppException;
-import org.octopussy.nes.graph.PPURenderer;
-import org.octopussy.nes.mappers.MemoryMapper;
-
 /**
  * @author octopussy
  */
-public final class VM {
-	private CPU mCPU;
-	private PPU mPPU;
-	private final MemoryMapper mMemoryMapper;
-	private boolean mStopped;
-
-	public VM(MemoryMapper memoryMapper) throws OctoAppException {
-		mMemoryMapper = memoryMapper;
-	}
-
-	public void start(PPURenderer renderer) {
-		mStopped = false;
-		mPPU = new PPU(mMemoryMapper, renderer);
-		mCPU = new CPU(mMemoryMapper);
-
-		mCPU.performReset();
-		while (mCPU.performNextInstruction() && !mStopped) {
-			boolean vBlankOccurred = mPPU.tick();
-			if (vBlankOccurred)
-				mCPU.performNMI();
-		}
-	}
-
-	public void stop() {
-		mStopped = true;
-	}
-}
